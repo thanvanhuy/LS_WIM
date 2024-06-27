@@ -1694,16 +1694,21 @@ namespace Giatrican
                 }
                 catch
                 {
-                    using (var tbldataxe = new databaselocal())
+                    try
                     {
-                        data_Xe_final.Sogplx = data_Xe_final.Sogplx + "#" + Declare.STT + "#" + Declare.Chedocan;
-                        tbldataxe.tbl_Data_Xe.Add(data_Xe_final);
-                        tbldataxe.SaveChanges();
-                        //data_Xe_final = new tbl_Data_Xe();
-                        //check = 0;
+                        using (var tbldataxe = new databaselocal())
+                        {
+                            data_Xe_final.Sogplx = data_Xe_final.Sogplx + "#" + Declare.STT + "#" + Declare.Chedocan;
+                            tbldataxe.tbl_Data_Xe.Add(data_Xe_final);
+                            tbldataxe.SaveChanges();
+                            //data_Xe_final = new tbl_Data_Xe();
+                            //check = 0;
+                        }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
-                
             }
             catch (DbEntityValidationException)
             {
