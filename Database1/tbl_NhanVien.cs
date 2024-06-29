@@ -1,4 +1,4 @@
-namespace Giatrican.Database
+namespace Giatrican.Database1
 {
     using System;
     using System.Collections.Generic;
@@ -26,14 +26,5 @@ namespace Giatrican.Database
         public string GhiChu { get; set; }
 
         public bool? Admin { get; set; }
-        public tbl_NhanVien()
-        {
-            MSNV = DateTime.Now.ToString("mmss");
-            Hoten = "notfound";
-            MatMa = "12345";
-            MSCViec = 0;
-            GhiChu = "";
-            Admin = null;
-        }
     }
 }

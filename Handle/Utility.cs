@@ -300,11 +300,12 @@ namespace Giatrican
                     return 0;
             }
         }
-        public static string FormatPercen(string percentage)
+        public static string FormatPercen(double? percentage)
         {
-            if(percentage.Length > 0)
+            string data = percentage.ToString();
+            if (data.Length > 0)
             {
-                return percentage + "%";
+                return data + "%";
             }
             return "0.00%";
            

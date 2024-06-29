@@ -5,19 +5,26 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Giatrican.Database;
+using Giatrican.Database1;
 using System.Threading;
 
 namespace Giatrican
 {
     public static class User
     {
+       public enum Usercan
+        {
+            DatViet=1,
+            Tamnhin=2,
+            Ctykhac=3
+        }
         public static string tentramcan { get; set; } = string.Empty;
         public static string tentinh { get; set; } = string.Empty;
         public static string lytrinh { get; set; } = string.Empty;
         public static string nhanviendangnhap { get; set; } = string.Empty;
         public static int macv { get; set; } = 0;
         public static string pathexel { get; set; } = string.Empty;
+       
         public enum UserType
         {
             User = 0,

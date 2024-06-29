@@ -1,12 +1,8 @@
-﻿using Giatrican.Database;
-using PlateMightsight;
-
+﻿
 namespace Giatrican
 {
     public static class Declare
     {
-        public static string STT { get; set; } = string.Empty;
-        public static string Chedocan { get; set; } = string.Empty;
         //public static DBController DBController = new DBController("vva.com.vn", "VVA_LSWIM", "sa", "VVASQL$%^47");
         public const string IPAddress = "192.168.100.21";
         public const string IPAddress1 = "192.168.100.22";

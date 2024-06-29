@@ -1,4 +1,4 @@
-namespace Giatrican.Database
+namespace Giatrican.Database1
 {
     using System;
     using System.Collections.Generic;
@@ -16,11 +16,5 @@ namespace Giatrican.Database
         public DateTime? thoigian { get; set; }
 
         public string ghichu { get; set; }
-        public tbl_Logdata()
-        {
-            Tennv = "xxx";
-            thoigian = DateTime.Now;
-            ghichu = "xxx";
-        }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using ClosedXML.Excel;
-using Giatrican.Database;
+using Giatrican.Database1;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -72,10 +72,10 @@ namespace Giatrican
                         tbl_Data_Xe = exel.tbl_Data_Xe.Where(n => n.Thoigian > dateTimePicker1.Value && n.Thoigian < dateTimePicker2.Value).ToList();
                         break;
                     case 2:
-                        tbl_Data_Xe = exel.tbl_Data_Xe.Where(n => n.Thoigian > dateTimePicker1.Value && n.Thoigian < dateTimePicker2.Value && n.Quataitong !="0").ToList();
+                        tbl_Data_Xe = exel.tbl_Data_Xe.Where(n => n.Thoigian > dateTimePicker1.Value && n.Thoigian < dateTimePicker2.Value && n.Quataitong >0).ToList();
                         break;
                     case 3:
-                        tbl_Data_Xe = exel.tbl_Data_Xe.Where(n => n.Thoigian > dateTimePicker1.Value && n.Thoigian < dateTimePicker2.Value && n.Quataitheogp != "0").ToList();
+                        tbl_Data_Xe = exel.tbl_Data_Xe.Where(n => n.Thoigian > dateTimePicker1.Value && n.Thoigian < dateTimePicker2.Value && n.Quataitheogp >0).ToList();
                         break;
                     default:
                         MessageBox.Show("Vui lòng chọn loại báo cáo cần xuất");

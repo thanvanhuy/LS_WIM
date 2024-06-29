@@ -1,4 +1,4 @@
-namespace Giatrican.Database
+namespace Giatrican.Database1
 {
     using System;
     using System.Collections.Generic;

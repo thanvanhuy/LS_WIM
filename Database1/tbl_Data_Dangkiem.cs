@@ -1,4 +1,4 @@
-﻿namespace Giatrican.Database
+namespace Giatrican.Database1
 {
     using System;
     using System.Collections.Generic;
@@ -65,30 +65,5 @@
 
         [Column(TypeName = "smalldatetime")]
         public DateTime? HanDK { get; set; }
-        public tbl_Data_Dangkiem()
-        {
-            ID = 0;
-            Bienso = "";
-            LoaiBS = null;
-            NhanHieu = "";
-            LoaiPT = null;
-            LoaiPT_String = "";
-            ChieudaiCoso = "";
-            SoMay = "";
-            SoKhung = "";
-            KichThuocBao = "";
-            KichThuocThung = "";
-            SoCho = null;
-            SoCho_String = "";
-            SoTruc = null;
-            TuTrongTK = null;
-            TaiTrongGT = null;
-            TrLgToanBoGT = null;
-            TrLgMoocCP = null;
-            DoViDK = "";
-            TemDK = "";
-            NgayDK = DateTime.Now;
-            HanDK = DateTime.Now;
-        }
     }
 }

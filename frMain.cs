@@ -5,13 +5,14 @@
  */
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
-using Giatrican.Database;
+using Giatrican.Database1;
 using Giatrican.Handle;
 using Newtonsoft.Json;
 using PlateMightsight;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Diagnostics;
 using System.Drawing;
@@ -38,6 +39,8 @@ namespace Giatrican
         Bitmap hinhsau;
        
         tbl_Data_Xe data_Xe_final = new tbl_Data_Xe();
+        database database= new database();
+        databaselocal databaselocal = new databaselocal();
         //tbl_Data_Dangkiem tbl_Data_Dangkiem=new tbl_Data_Dangkiem();
         public frMain()
         {
@@ -70,9 +73,12 @@ namespace Giatrican
                 catch {  }
                
                 tbl_Data_Xe dataxe = CanData.Getdata(data);
+                if (check == 0)
+                {
+                    MessageBox.Show("Vui lòng chọn loại xe");
+                    return;
+                }
                 dataxe.GetData(check);
-
-                data_Xe_final.Sogplx = "";
                 data_Xe_final.Thoigian = dataxe.Thoigian;
                 data_Xe_final.Taitrongtruc1 = dataxe.Taitrongtruc1;
                 data_Xe_final.Taitrongtruc2 = dataxe.Taitrongtruc2;
@@ -83,7 +89,7 @@ namespace Giatrican
                 data_Xe_final.Taitrongtruc7 = dataxe.Taitrongtruc7;
                 data_Xe_final.Taitrongtruc8 = dataxe.Taitrongtruc8;
                 data_Xe_final.TTLtruc = dataxe.TTLtruc;
-                data_Xe_final.tocdo = (double)Math.Round(dataxe.tocdo, 2);
+                data_Xe_final.tocdo = (double)Math.Round((double)dataxe.tocdo, 2);
                 data_Xe_final.Taitrongtruc1_1 = dataxe.Taitrongtruc1_1;
                 data_Xe_final.Taitrongtruc2_1 = dataxe.Taitrongtruc2_1;
                 data_Xe_final.Taitrongtruc3_1 = dataxe.Taitrongtruc3_1;
@@ -94,6 +100,8 @@ namespace Giatrican
                 data_Xe_final.Quataitruc2 = dataxe.Quataitruc2;
                 data_Xe_final.Quataitruc3 = dataxe.Quataitruc3;
                 data_Xe_final.Quataitong = dataxe.Quataitong;
+                data_Xe_final.sttcan = dataxe.sttcan;
+                data_Xe_final.chedocan = dataxe.chedocan;
                 
 
                 Setdata_UI(dataxe);
@@ -197,7 +205,7 @@ namespace Giatrican
             }));
             txt_speed.Invoke(new Action(() =>
             {
-                double tocDo = Math.Round(data_Xe.tocdo, 2);
+                double tocDo = Math.Round((double)data_Xe.tocdo, 2);
                 txt_speed.Text = tocDo.ToString();
             }));
             if (tb_so_nguoi.Text.Length > 0)
@@ -223,7 +231,7 @@ namespace Giatrican
                     }
 
                     if (c < 0) c = 0;
-                    tbLicenseGrossWeightOver.Text = Utility.FormatPercen(c.ToString());
+                    tbLicenseGrossWeightOver.Text = Utility.FormatPercen(c);
                 }));
             }
             
@@ -305,7 +313,7 @@ namespace Giatrican
         protected override void OnResize(EventArgs e)
         {
             //base.OnResize(e);
-            //this.Size = new System.Drawing.Size(1571, 904);
+            //this.Size = new System.Drawing.Size(1850, 950);
         }
 
         private void Timenow_Tick(object sender, EventArgs e)
@@ -387,11 +395,16 @@ namespace Giatrican
             aiCameraPlayer2.display = true;
             aiCameraPlayer3.display = true;
 
-            PlateMightsight.BuildSocketServer buildSocketServer = new PlateMightsight.BuildSocketServer(Declare.IP, Declare.Port);
+            //PlateMightsight.BuildSocketServer buildSocketServer = new PlateMightsight.BuildSocketServer(Declare.IP, Declare.Port);
+            //buildSocketServer.DataReceivednew += Datasocket;
+            //buildSocketServer.Start();
+            //if (buildSocketServer.error) MessageBox.Show("buildSocketServer err");
+
+
+            Socketserver buildSocketServer = new Socketserver(Declare.IP, Declare.Port);
             buildSocketServer.DataReceivednew += Datasocket;
             buildSocketServer.Start();
             if (buildSocketServer.error) MessageBox.Show("buildSocketServer err");
-
 
             cbbAxleGroupLength1.Enabled = false;
             cbbAxleGroupLength2.Enabled = false;
@@ -406,10 +419,10 @@ namespace Giatrican
             {
                 Console.WriteLine(ex.Message);
             }
-            //Socketserver server = new Socketserver("192.188.0.10", 10004);
-            //server.DataReceivednew += DataReceivedHandlerSoket;
-            //server.Start();
-            //if (server.error) MessageBox.Show("buildSocketServer err");
+            Socketserver server = new Socketserver("192.188.0.206", 10004);
+            server.DataReceivednew += DataReceivedHandlerSoket;
+            server.Start();
+            if (server.error) MessageBox.Show("buildSocketServer err");
         }
 
         private void DataReceivedHandlerSoket(string data, IPAddress endpointAddress, int endpointPort)
@@ -524,315 +537,361 @@ namespace Giatrican
         }
         private void pbReImg1_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "16 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục đơn 2");
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            check = 1;
-            pbRegulation.Image = pbReImg1.Image;
-            tbstructure.Text = "Đơn-Đơn";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = false;
-            txtrong2.Enabled = false;
-            txtcao2.Enabled = false;
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục đơn 2";
-            Label4.Text = "Tự trọng  xe";
-            tb_tai_trong_ro_mooc.Enabled=false;
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "16 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục đơn 2");
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                check = 1;
+                pbRegulation.Image = pbReImg1.Image;
+                tbstructure.Text = "Đơn-Đơn";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = false;
+                txtrong2.Enabled = false;
+                txtcao2.Enabled = false;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục đơn 2";
+                Label4.Text = "Tự trọng  xe";
+                tb_tai_trong_ro_mooc.Enabled = false;
+            });
+            
         }
 
         private void pbReImg2_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "24 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục kép 2 d > 1,3");
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            check = 2;
-            pbRegulation.Image = pbReImg2.Image;
-            tbstructure.Text = "Đơn-Kép";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = false;
-            txtrong2.Enabled = false;
-            txtcao2.Enabled = false;
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục kép 1";
-            Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "24 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục kép 2 d > 1,3");
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                check = 2;
+                pbRegulation.Image = pbReImg2.Image;
+                tbstructure.Text = "Đơn-Kép";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = false;
+                txtrong2.Enabled = false;
+                txtcao2.Enabled = false;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục kép 1";
+                Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+            });
+            
         }
 
         private void pbReImg3_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "24 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục đơn 2");
-            cbbAxleGroupLength3.Items.Add("Trục đơn 3");
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 3;
-            pbRegulation.Image = pbReImg3.Image;
-            tbstructure.Text = "Đơn-Đơn-Đơn";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = false;
-            txtrong2.Enabled = false;
-            txtcao2.Enabled = false;
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục đơn 2";
-            Label31.Text = "TL trục đơn 3";
-            Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "24 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục đơn 2");
+                cbbAxleGroupLength3.Items.Add("Trục đơn 3");
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 3;
+                pbRegulation.Image = pbReImg3.Image;
+                tbstructure.Text = "Đơn-Đơn-Đơn";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = false;
+                txtrong2.Enabled = false;
+                txtcao2.Enabled = false;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục đơn 2";
+                Label31.Text = "TL trục đơn 3";
+                Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+            });
+            
         }
 
         private void pbReImg4_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "30 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Cụm trục 3");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "30 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Cụm trục 3");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            check = 4;
-            pbRegulation.Image = pbReImg4.Image;
-            tbstructure.Text = "Đơn-Ba";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = false;
-            txtrong2.Enabled = false;
-            txtcao2.Enabled = false;
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL cụm trục 1";
-            Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                check = 4;
+                pbRegulation.Image = pbReImg4.Image;
+                tbstructure.Text = "Đơn-Ba";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = false;
+                txtrong2.Enabled = false;
+                txtcao2.Enabled = false;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL cụm trục 1";
+                Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+            });
+            
         }
 
         private void pbReImg5_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "30 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục đơn 2");
-            cbbAxleGroupLength3.Items.Add("Cụm trục 3 d > 1.3m");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "30 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục đơn 2");
+                cbbAxleGroupLength3.Items.Add("Cụm trục 3 d > 1.3m");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 5;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 5;
 
-            pbRegulation.Image = pbReImg5.Image;
-            tbstructure.Text = "Đơn-Đơn-Kép";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = false;
-            txtrong2.Enabled = false;
-            txtcao2.Enabled = false;
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục đơn 2";
-            Label31.Text = "TL trục kép 1";
-            Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+                pbRegulation.Image = pbReImg5.Image;
+                tbstructure.Text = "Đơn-Đơn-Kép";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = false;
+                txtrong2.Enabled = false;
+                txtcao2.Enabled = false;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục đơn 2";
+                Label31.Text = "TL trục kép 1";
+                Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+            });
+            
         }
 
         private void pbReImg6_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "34 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục đơn 2");
-            cbbAxleGroupLength3.Items.Add("Cụm trục 3 d > 1.3m");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "34 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục đơn 2");
+                cbbAxleGroupLength3.Items.Add("Cụm trục 3 d > 1.3m");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 6;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 6;
 
-            pbRegulation.Image = pbReImg6.Image;
-            tbstructure.Text = "Đơn-Đơn-Ba";
-            data_Xe_final.Kieuxe = check.ToString();
-            checkBox1.Text = "Chiều dài nhỏ hơn 7m";
-            txtdai2.Enabled = false;
-            txtrong2.Enabled = false;
-            txtcao2.Enabled = false;
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục đơn 2";
-            Label31.Text = "TL cụm trục 3";
-            Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+                pbRegulation.Image = pbReImg6.Image;
+                tbstructure.Text = "Đơn-Đơn-Ba";
+                data_Xe_final.Kieuxe = check.ToString();
+                checkBox1.Text = "Chiều dài nhỏ hơn 7m";
+                txtdai2.Enabled = false;
+                txtrong2.Enabled = false;
+                txtcao2.Enabled = false;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục đơn 2";
+                Label31.Text = "TL cụm trục 3";
+                Label4.Text = "Tự trọng của xe"; tb_tai_trong_ro_mooc.Enabled = false;
+            });
+            
         }
 
         private void pbReImg7_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "26 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục đơn 2");
-            cbbAxleGroupLength3.Items.Add("Trục đơn 3");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "26 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục đơn 2");
+                cbbAxleGroupLength3.Items.Add("Trục đơn 3");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 7;
-            pbRegulation.Image = pbReImg7.Image;
-            tbstructure.Text = "Đơn-Đơn-Đơn";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = true;
-            txtrong2.Enabled = true;
-            txtcao2.Enabled = true;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 7;
+                pbRegulation.Image = pbReImg7.Image;
+                tbstructure.Text = "Đơn-Đơn-Đơn";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = true;
+                txtrong2.Enabled = true;
+                txtcao2.Enabled = true;
 
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục đơn 2";
-            Label31.Text = "TL trục đơn 3";
-            Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục đơn 2";
+                Label31.Text = "TL trục đơn 3";
+                Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+            });
+            
         }
 
         private void pbReImg8_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "34 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục đơn 2");
-            cbbAxleGroupLength3.Items.Add("Trục kép 3");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "34 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục đơn 2");
+                cbbAxleGroupLength3.Items.Add("Trục kép 3");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 8;
-            pbRegulation.Image = pbReImg8.Image;
-            tbstructure.Text = "Đơn-Đơn-Kép";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = true;
-            txtrong2.Enabled = true;
-            txtcao2.Enabled = true;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 8;
+                pbRegulation.Image = pbReImg8.Image;
+                tbstructure.Text = "Đơn-Đơn-Kép";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = true;
+                txtrong2.Enabled = true;
+                txtcao2.Enabled = true;
 
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục đơn 2";
-            Label31.Text = "TL trục kép 1";
-            Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục đơn 2";
+                Label31.Text = "TL trục kép 1";
+                Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+            });
+            
         }
 
         private void pbReImg9_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "34 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục kép 2");
-            cbbAxleGroupLength3.Items.Add("Trục đơn 3");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "34 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục kép 2");
+                cbbAxleGroupLength3.Items.Add("Trục đơn 3");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 9;
-            pbRegulation.Image = pbReImg9.Image;
-            tbstructure.Text = "Đơn-Kép-Đơn";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = true;
-            txtrong2.Enabled = true;
-            txtcao2.Enabled = true;
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục kép 1";
-            Label31.Text = "TL trục đơn 3";
-            Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 9;
+                pbRegulation.Image = pbReImg9.Image;
+                tbstructure.Text = "Đơn-Kép-Đơn";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = true;
+                txtrong2.Enabled = true;
+                txtcao2.Enabled = true;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục kép 1";
+                Label31.Text = "TL trục đơn 3";
+                Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+            });
+            
         }
 
         private void pbReImg10_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "42 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục kép 2");
-            cbbAxleGroupLength3.Items.Add("Trục kép 3");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "42 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục kép 2");
+                cbbAxleGroupLength3.Items.Add("Trục kép 3");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 10;
-            pbRegulation.Image = pbReImg10.Image;
-            tbstructure.Text = "Đơn-Kép-Kép";
-            data_Xe_final.Kieuxe = check.ToString();
-            txtdai2.Enabled = true;
-            txtrong2.Enabled = true;
-            txtcao2.Enabled = true;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 10;
+                pbRegulation.Image = pbReImg10.Image;
+                tbstructure.Text = "Đơn-Kép-Kép";
+                data_Xe_final.Kieuxe = check.ToString();
+                txtdai2.Enabled = true;
+                txtrong2.Enabled = true;
+                txtcao2.Enabled = true;
 
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục kép 1";
-            Label31.Text = "TL trục kép 2";
-            Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục kép 1";
+                Label31.Text = "TL trục kép 2";
+                Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+            });
+            
         }
 
         private void pbReImg11_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "42 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Trục đơn 2");
-            cbbAxleGroupLength3.Items.Add("Cụm trục 3");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "42 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Trục đơn 2");
+                cbbAxleGroupLength3.Items.Add("Cụm trục 3");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 11;
-            pbRegulation.Image = pbReImg11.Image;
-            tbstructure.Text = "Đơn-Đơn-Ba";
-            data_Xe_final.Kieuxe = check.ToString();
-            checkBox1.Text = "Chiều dài nhỏ hơn 4.5m";
-            txtdai2.Enabled = true;
-            txtrong2.Enabled = true;
-            txtcao2.Enabled = true;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 11;
+                pbRegulation.Image = pbReImg11.Image;
+                tbstructure.Text = "Đơn-Đơn-Ba";
+                data_Xe_final.Kieuxe = check.ToString();
+                checkBox1.Text = "Chiều dài nhỏ hơn 4.5m";
+                txtdai2.Enabled = true;
+                txtrong2.Enabled = true;
+                txtcao2.Enabled = true;
 
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục đơn 2";
-            Label31.Text = "TL cụm trục 3";
-            Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục đơn 2";
+                Label31.Text = "TL cụm trục 3";
+                Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+            });
+            
         }
 
         private void pbReImg12_Click(object sender, EventArgs e)
         {
-            lbGrossWeightRe.Text = "48 tấn";
-            cbbAxleGroupLength1.Items.Clear();
-            cbbAxleGroupLength2.Items.Clear();
-            cbbAxleGroupLength3.Items.Clear();
-            cbbAxleGroupLength1.Items.Add("Trục đơn 1");
-            cbbAxleGroupLength2.Items.Add("Cụm trục 2");
-            cbbAxleGroupLength3.Items.Add("Cụm trục 3");
+            UpdateUI(() => {
+                lbGrossWeightRe.Text = "48 tấn";
+                cbbAxleGroupLength1.Items.Clear();
+                cbbAxleGroupLength2.Items.Clear();
+                cbbAxleGroupLength3.Items.Clear();
+                cbbAxleGroupLength1.Items.Add("Trục đơn 1");
+                cbbAxleGroupLength2.Items.Add("Cụm trục 2");
+                cbbAxleGroupLength3.Items.Add("Cụm trục 3");
 
-            cbbAxleGroupLength1.SelectedIndex = 0;
-            cbbAxleGroupLength2.SelectedIndex = 0;
-            cbbAxleGroupLength3.SelectedIndex = 0;
-            check = 12;
-            pbRegulation.Image = pbReImg12.Image;
-            tbstructure.Text = "Đơn-Kép-Ba";
-            data_Xe_final.Kieuxe = check.ToString();
-            checkBox1.Text = "Chiều dài nhỏ hơn 6.5m";
-            txtdai2.Enabled = true;
-            txtrong2.Enabled = true;
-            txtcao2.Enabled = true;
+                cbbAxleGroupLength1.SelectedIndex = 0;
+                cbbAxleGroupLength2.SelectedIndex = 0;
+                cbbAxleGroupLength3.SelectedIndex = 0;
+                check = 12;
+                pbRegulation.Image = pbReImg12.Image;
+                tbstructure.Text = "Đơn-Kép-Ba";
+                data_Xe_final.Kieuxe = check.ToString();
+                checkBox1.Text = "Chiều dài nhỏ hơn 6.5m";
+                txtdai2.Enabled = true;
+                txtrong2.Enabled = true;
+                txtcao2.Enabled = true;
 
-            Label29.Text = "TL trục đơn 1";
-            Label30.Text = "TL trục kép 1";
-            Label31.Text = "TL cụm trục 3";
-            Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+                Label29.Text = "TL trục đơn 1";
+                Label30.Text = "TL trục kép 1";
+                Label31.Text = "TL cụm trục 3";
+                Label4.Text = "Tự trọng đầu kéo"; tb_tai_trong_ro_mooc.Enabled = true;
+            });
+            
         }
-
+        private void UpdateUI(Action action)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(action);
+            }
+            else
+            {
+                action();
+            }
+        }
         private void btPrinter_Click(object sender, EventArgs e)
         {
             Thread thread2 = new Thread(new ThreadStart(inphieu));
@@ -852,13 +911,20 @@ namespace Giatrican
                 MessageBox.Show("Phiếu in không tồn tại");
                 return;
             }
+            if (check==0)
+            {
+                btCancel_Click(null, null);
+                button1_Click(null, null);
+                MessageBox.Show("Không thể in lại vui lòng xuất lại dữ liệu từ cân");
+                return;
+            }
             // xuất exel
             var workbook = new XLWorkbook(filepath);
             var ws1 = workbook.Worksheet(1);
             ws1.Cell($"A{1}").Value = User.tentinh;
             ws1.Cell($"F{1}").Value = User.tentramcan;
             ws1.Cell($"I{2}").Value = User.lytrinh;
-            ws1.Cell($"I{1}").Value = "STT:"+Declare.STT;
+            ws1.Cell($"I{1}").Value = "STT:"+ data_Xe_final.sttcan;
             ws1.Cell($"F{2}").Value = "Số phiếu cân:"+ data_Xe_final.Thoigian?.ToString("ddMMyyy_hhmmss");
 
             ws1.Cell($"A{6}").Value = "BKS xe ô tô: "+ tbLicensePlate.Text.ToString();
@@ -909,7 +975,7 @@ namespace Giatrican
             ws1.Cell($"H{14}").Value = Utility.KilogramsToTons(Int32.Parse(tb_tai_trong_cho_phep.Text.ToString()));
             // ws1.Cell($"H{14}").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            ws1.Cell($"H{10}").Value = "Chế độ cân: "+Declare.Chedocan;
+            ws1.Cell($"H{10}").Value = "Chế độ cân: "+data_Xe_final.chedocan;
             if (check < 7)
             {
                 ws1.Cell($"B{16}").Value = txtdai.Text.ToString() + "x" + txtrong.Text.ToString() + "x" + txtcao.Text.ToString();
@@ -1181,7 +1247,7 @@ namespace Giatrican
             int b = (int)(data_Xe_final.TTLtruc * 0.95);
             ws1.Cell($"A{30}").Value = Utility.KilogramsToTons(b - a).ToString();
             ws1.Cell($"A{30}").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws1.Cell($"G{30}").Value = tbLicenseGrossWeightOver.Text.ToString();
+            ws1.Cell($"G{30}").Value = data_Xe_final.Quataitheogp;
             ws1.Cell($"G{30}").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
             string tbAxleGroupOve1 = tbAxleGroupOver1.Text.ToString();
@@ -1190,36 +1256,28 @@ namespace Giatrican
             string tbAxleGroupOve4 = tbGrossWeightOver.Text.ToString();
             string tbAxleGroupOve5 = tbLicenseGrossWeightOver.Text.ToString();
 
-            if (tbAxleGroupOve1.StartsWith("0") && tbAxleGroupOve2.StartsWith("0") && tbAxleGroupOve3.StartsWith("0") && tbAxleGroupOve4.StartsWith("0") && tbAxleGroupOve5.StartsWith("0"))
+            if (data_Xe_final.Quataitruc1<=0 && data_Xe_final.Quataitruc2 <= 0 && data_Xe_final.Quataitruc3 <= 0 && data_Xe_final.Quataitong <= 0 && data_Xe_final.Quataitheogp <= 0)
             {
                 ws1.Cell($"A{35}").Value = "Xe không vi phạm";
             }
             else
             {
-                if (!tbAxleGroupOve4.StartsWith("0"))
+                if (data_Xe_final.Quataitong>0)
                 {
-                    ws1.Cell($"A{35}").Value = "Xe vượt tổng trọng lượng cho phép của cầu, đường: " + tbAxleGroupOve4;
+                    ws1.Cell($"A{35}").Value = "Xe vượt tổng trọng lượng cho phép của cầu, đường: " + data_Xe_final.Quataitong + "%";
                 }
-                if (!tbAxleGroupOve1.StartsWith("0") || !tbAxleGroupOve2.StartsWith("0") || !tbAxleGroupOve3.StartsWith("0"))
+                double maxquatai = 0;
+                if (data_Xe_final.Quataitruc1.HasValue && data_Xe_final.Quataitruc2.HasValue && data_Xe_final.Quataitruc3.HasValue)
                 {
-                    string largestValue = tbAxleGroupOve1;
-                    if (tbAxleGroupOve2.CompareTo(largestValue) > 0)
-                    {
-                        largestValue = tbAxleGroupOve2;
-                    }
-
-                    if (tbAxleGroupOve3.CompareTo(largestValue) > 0)
-                    {
-                        largestValue = tbAxleGroupOve3;
-                    }
-                    if (largestValue != "")
-                    {
-                        ws1.Cell($"A{36}").Value = "Xe vượt tải trọng trục cho phép, đường: " + largestValue;
-                    }
+                    maxquatai = Math.Max(data_Xe_final.Quataitruc1.Value, Math.Max(data_Xe_final.Quataitruc2.Value, data_Xe_final.Quataitruc3.Value));
                 }
-                if (!tbAxleGroupOve5.StartsWith("0"))
+                if (maxquatai>0)
                 {
-                    ws1.Cell($"A{37}").Value = "Xe vượt khối lượng hàng CC CPTGGT: " + tbAxleGroupOve5 ;
+                    ws1.Cell($"A{36}").Value = "Xe vượt tải trọng trục cho phép, đường: " + maxquatai + "%";
+                }
+                if (data_Xe_final.Quataitheogp>0)
+                {
+                    ws1.Cell($"A{37}").Value = "Xe vượt khối lượng hàng CC CPTGGT: " + data_Xe_final.Quataitheogp + "%";
                 }
             }
             if (hinhtruoc != null)
@@ -1443,7 +1501,7 @@ namespace Giatrican
 
         private void tbLicenseGrossWeightOver_TextChanged(object sender, EventArgs e)
         {
-            data_Xe_final.Quataitheogp = tbLicenseGrossWeightOver.Text;
+            data_Xe_final.Quataitheogp = double.Parse(tbLicenseGrossWeightOver.Text.Replace("%",""));
         }
         private void txtchieudai_TextChanged(object sender, EventArgs e)
         {
@@ -1451,7 +1509,6 @@ namespace Giatrican
         }
         private void button6_Click(object sender, EventArgs e)
         {
-            return;// đang dùng ko sql nên ko tìm
             string bienso = tbLicensePlate.Text.Trim();
             using (var dtxe=new database())
             {
@@ -1485,23 +1542,14 @@ namespace Giatrican
                         tbAxleGroupWeight3.Text = data[0].TLtruc3.ToString();
                         tbGrossWeight.Text = data[0].TTLtruc.ToString();
                         tbLicenseGrossWeight.Text = data[0].TLgiayphep.ToString();
-                        tbAxleGroupOver1.Text = data[0].Quataitruc1.ToString();
-                        tbAxleGroupOver2.Text = data[0].Quataitruc2.ToString();
-                        tbAxleGroupOver3.Text = data[0].Quataitruc3.ToString();
-                        tbGrossWeightOver.Text = data[0].Quataitong.ToString();
-                        tbLicenseGrossWeightOver.Text = data[0].Quataitheogp.ToString();
+                        tbAxleGroupOver1.Text = data[0].Quataitruc1.ToString() + "%";
+                        tbAxleGroupOver2.Text = data[0].Quataitruc2.ToString() + "%";
+                        tbAxleGroupOver3.Text = data[0].Quataitruc3.ToString() + "%";
+                        tbGrossWeightOver.Text = data[0].Quataitong.ToString() + "%";
+                        tbLicenseGrossWeightOver.Text = data[0].Quataitheogp.ToString() + "%";
                         txt_speed.Text = data[0].tocdo.ToString();
-                        string Sogplx = data[0].Sogplx;
-                        if (Sogplx.Contains("#"))
-                        {
-                            string[] parts = Sogplx.Split('#');
-                            txtsgp.Text = parts[0];
-                            Declare.STT= parts[1];
-                        }
-                        else
-                        {
-                            txtsgp.Text = data[0].Sogplx;
-                        }
+                        txtsgp.Text = data[0].Sogplx;
+                        
                         check = int.Parse(data[0].Kieuxe.ToString());
                         clickpicture(check);
                         //hình chưa có
@@ -1511,8 +1559,7 @@ namespace Giatrican
                         hinhtruoc = Utility.getBitmapFromFile(data[0].hinhtruoc.ToString());
                         hinhsau = Utility.getBitmapFromFile(data[0].hinhsau.ToString());
 
-                        data_Xe_final.tocdo = data[0].tocdo;
-                        data_Xe_final.Thoigian = data[0].Thoigian;
+                        data_Xe_final = data[0];
                         return;
                     }
                     else
@@ -1543,13 +1590,15 @@ namespace Giatrican
         {
             if (e.RowIndex >= 0)
             {
-                int id;
-                if (dataGridView1.Rows[e.RowIndex].Cells["ID"].Value != null &&
-                    int.TryParse(dataGridView1.Rows[e.RowIndex].Cells["ID"].Value.ToString(), out id))
+           
+                if (dataGridView1.Rows[e.RowIndex].Cells["ID"].Value != null)
                 {
+                    string id = dataGridView1.Rows[e.RowIndex].Cells["ID"].Value.ToString();
+                    Guid guid= Guid.Parse(id);
+                   
                     using (var dtxe = new database())
                     {
-                        var data = dtxe.tbl_Data_Xe.Where(n => n.Id == id).FirstOrDefault();
+                        var data = dtxe.tbl_Data_Xe.Where(n => n.Id == guid).FirstOrDefault();
                         tbLicensePlate.Text = data.Biensotruoc;
                         tbLicensePlate1.Text = data.Biensosau;
                         txtmauxe.Text = data.Mauxe;
@@ -1575,23 +1624,14 @@ namespace Giatrican
                         tbAxleGroupWeight3.Text = data.TLtruc3.ToString();
                         tbGrossWeight.Text = data.TTLtruc.ToString();
                         tbLicenseGrossWeight.Text = data.TLgiayphep.ToString();
-                        tbAxleGroupOver1.Text = data.Quataitruc1.ToString();
-                        tbAxleGroupOver2.Text = data.Quataitruc2.ToString();
-                        tbAxleGroupOver3.Text = data.Quataitruc3.ToString();
-                        tbGrossWeightOver.Text = data.Quataitong.ToString();
-                        tbLicenseGrossWeightOver.Text = data.Quataitheogp.ToString();
+                        tbAxleGroupOver1.Text = data.Quataitruc1.ToString() +"%";
+                        tbAxleGroupOver2.Text = data.Quataitruc2.ToString() + "%";
+                        tbAxleGroupOver3.Text = data.Quataitruc3.ToString() + "%";
+                        tbGrossWeightOver.Text = data.Quataitong.ToString() + "%";
+                        tbLicenseGrossWeightOver.Text = data.Quataitheogp.ToString() + "%";
                         txt_speed.Text = data.tocdo.ToString();
-                        string Sogplx = data.Sogplx;
-                        if (Sogplx.Contains("#"))
-                        {
-                            string[] parts = Sogplx.Split('#');
-                            txtsgp.Text = parts[0];
-                            Declare.STT = parts[1];
-                        }
-                        else
-                        {
-                            txtsgp.Text = data.Sogplx;
-                        }
+                        txtsgp.Text = data.Sogplx;
+                        
                         check = int.Parse(data.Kieuxe.ToString());
                         clickpicture(check);
                         //hình chưa có
@@ -1601,8 +1641,7 @@ namespace Giatrican
                         hinhtruoc = Utility.getBitmapFromFile(data.hinhtruoc.ToString());
                         hinhsau = Utility.getBitmapFromFile(data.hinhsau.ToString());
 
-                        data_Xe_final.tocdo = data.tocdo;
-                        data_Xe_final.Thoigian = data.Thoigian;
+                        data_Xe_final = data;
                         return;
                     }
                 }
@@ -1660,6 +1699,30 @@ namespace Giatrican
                 default: return;
             }
         }
+        private bool syncdata()
+        {
+            try
+            {
+                string sql = "SELECT * FROM tbl_Data_Xe WHERE sync IS NULL OR sync <> 1";
+                var data = databaselocal.tbl_Data_Xe.SqlQuery(sql).ToList();
+                if (data != null && data.Any())
+                {
+                    foreach (var item in data)
+                    {
+                        item.sync = 1;
+                        databaselocal.SaveChanges();
+                        database.tbl_Data_Xe.Add(item);
+                        database.SaveChanges();
+                       
+                    }
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+            }
+            return false;
+        }
         private void Savedata_sql()
         {
             Thread thread = new Thread(savedata);
@@ -1683,13 +1746,14 @@ namespace Giatrican
                 }
                 try
                 {
+                    data_Xe_final.Id= Guid.NewGuid();
+                    data_Xe_final.IdUser = (int?)User.Usercan.DatViet;
                     using (var tbldataxe = new database())
                     {
-                        data_Xe_final.Sogplx = data_Xe_final.Sogplx + "#" + Declare.STT + "#" + Declare.Chedocan;
                         tbldataxe.tbl_Data_Xe.Add(data_Xe_final);
                         tbldataxe.SaveChanges();
-                        //data_Xe_final = new tbl_Data_Xe();
-                        //check = 0;
+                        data_Xe_final = new tbl_Data_Xe();
+                        check = 0;
                     }
                 }
                 catch
@@ -1698,11 +1762,10 @@ namespace Giatrican
                     {
                         using (var tbldataxe = new databaselocal())
                         {
-                            data_Xe_final.Sogplx = data_Xe_final.Sogplx + "#" + Declare.STT + "#" + Declare.Chedocan;
                             tbldataxe.tbl_Data_Xe.Add(data_Xe_final);
                             tbldataxe.SaveChanges();
-                            //data_Xe_final = new tbl_Data_Xe();
-                            //check = 0;
+                            data_Xe_final = new tbl_Data_Xe();
+                            check = 0;
                         }
                     }
                     catch (Exception)
@@ -1727,6 +1790,7 @@ namespace Giatrican
         private void button2_Click(object sender, EventArgs e)
         {
             xuly(textBox1.Text);
+           // syncdata();
         }
     }
 }

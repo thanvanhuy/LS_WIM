@@ -1,5 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
-using Giatrican.Database;
+using Giatrican.Database1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,19 +23,16 @@ namespace Giatrican
                 switch (key)
                 {
                     case "STT":
-                        Declare.STT = "";
-                        Declare.STT = value;
+                        tbl_Data_Xe.sttcan = value;
                         break;
                     case "THOI GIAN CAN":
                         tbl_Data_Xe.Thoigian = getDatetime(value);
                         break;
                     case "KET QUA CHE DO CAN TINH":
-                        Declare.Chedocan = "";
-                        Declare.Chedocan = "Tĩnh";
+                        tbl_Data_Xe.chedocan = "Tĩnh";
                         break;
                     case "KET QUA CHE DO CAN DONG":
-                        Declare.Chedocan = "";
-                        Declare.Chedocan = "Động";
+                        tbl_Data_Xe.chedocan = "Động";
                         break;
                     case "BIEN SO XE 1":
                         tbl_Data_Xe.Biensotruoc = value;
