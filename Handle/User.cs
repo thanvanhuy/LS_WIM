@@ -15,8 +15,7 @@ namespace Giatrican
        public enum Usercan
         {
             DatViet=1,
-            Tamnhin=2,
-            Ctykhac=3
+            Ctykhac=2
         }
         public static string tentramcan { get; set; } = string.Empty;
         public static string tentinh { get; set; } = string.Empty;

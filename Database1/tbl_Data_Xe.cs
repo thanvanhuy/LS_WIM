@@ -124,6 +124,10 @@
 
         public int? sync { get; set; }
         public int? IdUser { get; set; }
+        [StringLength(500)]
+        public string hinhtruoclocal { get; set; }
+        public string hinhsaulocal { get; set; }
+        public int? loaixe { get; set; }
         public tbl_Data_Xe()
         {
 
@@ -176,7 +180,12 @@
             tocdo = 0.0;
             sync = 0;
             IdUser = 1;
+            hinhtruoclocal = string.Empty;
+            hinhsaulocal = string.Empty;
+            loaixe = 1;
         }
+        
+
         public void GetData(int type)
         {
             // phân giải theo loại xe
@@ -203,9 +212,9 @@
                     case 1:
                         this.TLtruc1 = this.Taitrongtruc1_1;
                         this.TLtruc2 = this.Taitrongtruc2_1;
-                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1_1 - 2000) / 2000) * 100));
-                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2_1 - 2000) / 2000) * 100));
-                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - 10000) / 10000) * 100));
+                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1_1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2_1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - Declare.xe16tan) / Declare.xe16tan) * 100));
 
                         return;
                     case 2:
@@ -238,10 +247,10 @@
                         this.TLtruc1 = this.Taitrongtruc1_1;
                         this.TLtruc2 = this.Taitrongtruc2_1;
                         this.TLtruc3 = this.Taitrongtruc3_1;
-                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1_1 - 2000) / 2000) * 100));
-                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2_1 - 2000) / 2000) * 100));
-                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc3_1 - 2000) / 2000) * 100));
-                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - 10000) / 10000) * 100));
+                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1_1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2_1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc3_1 - Declare.xe16tan) / Declare.xe16tan) * 100));
+                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - Declare.xe30tan) / Declare.xe30tan) * 100));
 
                         return;
                     case 6:
@@ -308,10 +317,10 @@
                         this.TLtruc1 = this.Taitrongtruc1_1;
                         this.TLtruc2 = this.Taitrongtruc2_1;
                         this.TLtruc3 = this.Taitrongtruc3_1;
-                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1_1 - 5000) / 5000) * 100));
-                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2_1 - 5000) / 5000) * 100));
-                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc3_1 - 5000) / 5000) * 100));
-                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - 10000) / 10000) * 100));
+                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1_1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2_1 - Declare.xe18tan) / Declare.xe18tan) * 100));
+                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc3_1 - Declare.xe24tan) / Declare.xe24tan) * 100));
+                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - Declare.xe48tan) / Declare.xe48tan) * 100));
 
                         return;
 
@@ -325,9 +334,9 @@
                     case 1:
                         this.TLtruc1 = this.Taitrongtruc1;
                         this.TLtruc2 = this.Taitrongtruc2;
-                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1 - 2000) / 2000) * 100));
-                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2 - 2000) / 2000) * 100));
-                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - 10000) / 10000) * 100));
+                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - Declare.xe16tan) / Declare.xe16tan) * 100));
                         return;
                     case 2:
                         this.TLtruc1 = this.Taitrongtruc1;
@@ -356,10 +365,10 @@
                         this.TLtruc1 = this.Taitrongtruc1;
                         this.TLtruc2 = this.Taitrongtruc2;
                         this.TLtruc3 = this.Taitrongtruc3 + this.Taitrongtruc4;
-                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1 - 2000) / 2000) * 100));
-                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2 - 2000) / 2000) * 100));
-                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc3 + this.Taitrongtruc4 - 2000) / 2000) * 100));
-                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - 10000) / 10000) * 100));
+                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc3 + this.Taitrongtruc4 - Declare.xe16tan) / Declare.xe16tan) * 100));
+                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - Declare.xe30tan) / Declare.xe30tan) * 100));
                         return;
                     case 6:
                         this.TLtruc1 = this.Taitrongtruc1;
@@ -419,10 +428,10 @@
                         this.TLtruc1 = this.Taitrongtruc1;
                         this.TLtruc2 = this.Taitrongtruc2 + this.Taitrongtruc3;
                         this.TLtruc3 = this.Taitrongtruc4 + this.Taitrongtruc5 + this.Taitrongtruc6 + this.Taitrongtruc7 + this.Taitrongtruc8;
-                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1 - 5000) / 5000) * 100));
-                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2 + this.Taitrongtruc3 - 5000) / 5000) * 100));
-                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc4 + this.Taitrongtruc5 + this.Taitrongtruc6 + this.Taitrongtruc7 + this.Taitrongtruc8 - 5000) / 5000) * 100));
-                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - 10000) / 10000) * 100));
+                        this.Quataitruc1 = Math.Max(0, (((double)(this.Taitrongtruc1 - Declare.xe10tan) / Declare.xe10tan) * 100));
+                        this.Quataitruc2 = Math.Max(0, (((double)(this.Taitrongtruc2 + this.Taitrongtruc3 - Declare.xe16tan) / Declare.xe16tan) * 100));
+                        this.Quataitruc3 = Math.Max(0, (((double)(this.Taitrongtruc4 + this.Taitrongtruc5 + this.Taitrongtruc6 + this.Taitrongtruc7 + this.Taitrongtruc8 - Declare.xe24tan) / Declare.xe24tan) * 100));
+                        this.Quataitong = Math.Max(0, (((double)(this.TTLtruc - Declare.xe48tan) / Declare.xe48tan) * 100));
                         return;
 
                     default: return;

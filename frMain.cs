@@ -4,7 +4,6 @@
  * https://www.facebook.com/huy02092001
  */
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Giatrican.Database1;
 using Giatrican.Handle;
 using Newtonsoft.Json;
@@ -12,7 +11,6 @@ using PlateMightsight;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Diagnostics;
 using System.Drawing;
@@ -37,7 +35,7 @@ namespace Giatrican
         aiCameraRtsp.aiCameraPlayer aiCameraPlayer3;
         Bitmap hinhtruoc;
         Bitmap hinhsau;
-       
+        int USERID  = (int)User.Usercan.DatViet;
         tbl_Data_Xe data_Xe_final = new tbl_Data_Xe();
         database database= new database();
         databaselocal databaselocal = new databaselocal();
@@ -234,8 +232,6 @@ namespace Giatrican
                     tbLicenseGrossWeightOver.Text = Utility.FormatPercen(c);
                 }));
             }
-            
-           
         }
         private void ClearText()
         {
@@ -362,13 +358,7 @@ namespace Giatrican
         }
         private  void frMain_Load(object sender, EventArgs e)
         {
-            
-            if (Environment.MachineName.CompareTo("VVA-DC")==0)
-            {
-                textBox1.Visible = true;
-                button2.Visible = true;
-            }
-            lb_nv.Text = User.nhanviendangnhap;
+
             if (aiCameraPlayer != null)
             {
                 aiCameraPlayer.stopLiveview();
@@ -385,11 +375,31 @@ namespace Giatrican
             aiCameraPlayer1 = new aiCameraRtsp.aiCameraPlayer();
             aiCameraPlayer2 = new aiCameraRtsp.aiCameraPlayer();
             aiCameraPlayer3 = new aiCameraRtsp.aiCameraPlayer();
+            if (Environment.MachineName.CompareTo("VVA-DC")==0)
+            {
+                textBox1.Visible = true;
+                button2.Visible = true;
+            }
+            if (USERID == (int)User.Usercan.DatViet)
+            {
+                label43.Visible = false;
+                txt_loaixe.Visible = false;
+                aiCameraPlayer.liveViewUrl((long)pbImage.Handle, Declare.rtsp, Declare.username, Declare.pass, Declare.key);
+                aiCameraPlayer1.liveViewUrl((long)pbImage1.Handle, Declare.rtsp1, Declare.username, Declare.pass, Declare.key);
+                aiCameraPlayer2.liveViewUrl((long)pbImage2.Handle, Declare.rtsp2, Declare.username, Declare.pass, Declare.key);
+                aiCameraPlayer3.liveViewUrl((long)pbImage3.Handle, Declare.rtsp3, Declare.username, Declare.pass, Declare.key);
+            }
+            else
+            {
+                aiCameraPlayer.liveViewUrl((long)pbImage.Handle, Declare.rtsp, Declare.username, Declare.pass, Declare.key);
+                aiCameraPlayer1.liveViewUrl((long)pbImage1.Handle, Declare.rtsp1_ctykhac, Declare.username_divio, Declare.pass, Declare.key);
+                aiCameraPlayer2.liveViewUrl((long)pbImage2.Handle, Declare.rtsp2, Declare.username, Declare.pass, Declare.key);
+                aiCameraPlayer3.liveViewUrl((long)pbImage3.Handle, Declare.rtsp2_ctykhac, Declare.username_divio, Declare.pass, Declare.key);
+            }
+            lb_nv.Text = User.nhanviendangnhap;
+            
 
-            aiCameraPlayer.liveViewUrl((long)pbImage.Handle, Declare.rtsp, Declare.username, Declare.pass, Declare.key);
-            aiCameraPlayer1.liveViewUrl((long)pbImage1.Handle, Declare.rtsp1, Declare.username, Declare.pass, Declare.key);
-            aiCameraPlayer2.liveViewUrl((long)pbImage2.Handle, Declare.rtsp2, Declare.username, Declare.pass, Declare.key);
-            aiCameraPlayer3.liveViewUrl((long)pbImage3.Handle, Declare.rtsp3, Declare.username, Declare.pass, Declare.key);
+           
             aiCameraPlayer.display = true;
             aiCameraPlayer1.display = true;
             aiCameraPlayer2.display = true;
@@ -905,9 +915,24 @@ namespace Giatrican
         }
         private void inphieu()
         {
+            Seach();
+            if (USERID != (int)User.Usercan.DatViet)
+            {
+                try
+                {
+                    Savedata_sql();
+                }
+                catch { }
+                HideSeach();
+                MessageBox.Show("HOÀN THÀNH");
+                return;
+            }
+              
+
             string filepath = @"Exel/Phieucan1A.xlsx";
             if (!File.Exists(filepath))
             {
+                HideSeach();
                 MessageBox.Show("Phiếu in không tồn tại");
                 return;
             }
@@ -916,14 +941,18 @@ namespace Giatrican
                 btCancel_Click(null, null);
                 button1_Click(null, null);
                 MessageBox.Show("Không thể in lại vui lòng xuất lại dữ liệu từ cân");
+                HideSeach();
                 return;
             }
             // xuất exel
             var workbook = new XLWorkbook(filepath);
             var ws1 = workbook.Worksheet(1);
-            ws1.Cell($"A{1}").Value = User.tentinh;
-            ws1.Cell($"F{1}").Value = User.tentramcan;
-            ws1.Cell($"I{2}").Value = User.lytrinh;
+            if (USERID != (int)User.Usercan.DatViet)
+            {
+                ws1.Cell($"A{1}").Value = User.tentinh;
+                ws1.Cell($"F{1}").Value = User.tentramcan;
+                ws1.Cell($"I{2}").Value = User.lytrinh;
+            }
             ws1.Cell($"I{1}").Value = "STT:"+ data_Xe_final.sttcan;
             ws1.Cell($"F{2}").Value = "Số phiếu cân:"+ data_Xe_final.Thoigian?.ToString("ddMMyyy_hhmmss");
 
@@ -1296,7 +1325,7 @@ namespace Giatrican
                 var picture1 = cellA51.Worksheet.AddPicture(imageStream1).MoveTo(cellA51);
                 picture1.WithSize(350, 240);
             }
-            User.pathexel = "D:\\Phieucan\\" + "phieucan_" + DateTime.Now.ToString("ddMMyyy_hhmmss") + ".xlsx";
+            User.pathexel = "D:\\Phieucan\\" + "phieucan_"+ data_Xe_final.Biensotruoc + DateTime.Now.ToString("_ddMMyyy_hhmmss") + ".xlsx";
             workbook.SaveAs(User.pathexel);
             workbook.Dispose();
             lb_exel.Invoke((MethodInvoker)delegate {
@@ -1307,6 +1336,7 @@ namespace Giatrican
                 Savedata_sql();
             }
             catch { }
+            HideSeach();
             MessageBox.Show("IN HOÀN THÀNH");
         }
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -1386,10 +1416,11 @@ namespace Giatrican
 
         private void button1_Click(object sender, EventArgs e)
         {
-            dataGridView1.Rows.Clear();
-            ClearTextFromAnotherThread();
+           
             try
             {
+                dataGridView1.Rows.Clear();
+                ClearTextFromAnotherThread();
                 User.savelogdata("Hủy thông tin xe:" + data_Xe_final.Biensotruoc);
             }
             catch { }
@@ -1509,74 +1540,106 @@ namespace Giatrican
         }
         private void button6_Click(object sender, EventArgs e)
         {
-            string bienso = tbLicensePlate.Text.Trim();
-            using (var dtxe=new database())
+            Seach();
+            try
             {
-                var data = dtxe.tbl_Data_Xe.Where(n => n.Biensotruoc.Contains(bienso)).ToList();
-                if(data.Count > 0)
+                string bienso = tbLicensePlate.Text.Trim();
+                using (var dtxe = new database())
                 {
-                    if(data.Count == 1)
+                    var data = dtxe.tbl_Data_Xe.Where(n => n.Biensotruoc.Contains(bienso) && n.IdUser == USERID).Take(10).ToList();
+                    if (data.Count > 0)
                     {
-                        tbLicensePlate.Text = data[0].Biensotruoc;
-                        tbLicensePlate1.Text = data[0].Biensosau;
-                        txtmauxe.Text = data[0].Mauxe;
-                        tbDriver.Text = data[0].Laixe;
-                        txtchuxe.Text = data[0].Chuxe;
-                        txtsgplh.Text = data[0].Sogplhx;
-                        tb_so_nguoi.Text = data[0].Songuoitrenxe.ToString();
-                        tb_tai_trong_dau_keo.Text = data[0].Taitrongdaukeo.ToString();
-                        tb_tai_trong_ro_mooc.Text = data[0].Taitrongromoc.ToString();
-                        tb_tai_trong_cho_phep.Text = data[0].Taitrongchophep.ToString();
-                        txtdai.Text = data[0].KT_oto_dai.ToString();
-                        txtrong.Text = data[0].KT_oto_rong.ToString();
-                        txtcao.Text = data[0].KT_oto_cao.ToString();
-                        txtdai1.Text = data[0].KT_rm_dai.ToString();
-                        txtrong1.Text = data[0].KT_rm_rong.ToString();
-                        txtcao1.Text = data[0].KT_rm_cao.ToString();
-                        txtdai2.Text = data[0].KTthunghang_dai.ToString();
-                        txtrong2.Text = data[0].KTthunghang_rong.ToString();
-                        txtcao2.Text = data[0].KTthunghang_cao.ToString();
-                        txtchieudai.Text = data[0].Chieudaicoso.ToString();
-                        tbAxleGroupWeight1.Text = data[0].TLtruc1.ToString();
-                        tbAxleGroupWeight2.Text = data[0].TLtruc2.ToString();
-                        tbAxleGroupWeight3.Text = data[0].TLtruc3.ToString();
-                        tbGrossWeight.Text = data[0].TTLtruc.ToString();
-                        tbLicenseGrossWeight.Text = data[0].TLgiayphep.ToString();
-                        tbAxleGroupOver1.Text = data[0].Quataitruc1.ToString() + "%";
-                        tbAxleGroupOver2.Text = data[0].Quataitruc2.ToString() + "%";
-                        tbAxleGroupOver3.Text = data[0].Quataitruc3.ToString() + "%";
-                        tbGrossWeightOver.Text = data[0].Quataitong.ToString() + "%";
-                        tbLicenseGrossWeightOver.Text = data[0].Quataitheogp.ToString() + "%";
-                        txt_speed.Text = data[0].tocdo.ToString();
-                        txtsgp.Text = data[0].Sogplx;
-                        
-                        check = int.Parse(data[0].Kieuxe.ToString());
-                        clickpicture(check);
-                        //hình chưa có
-                        pbAxle1.Image = Utility.getImageFromFile(data[0].hinhtruoc.ToString());
-                        pbAxle3.Image = Utility.getImageFromFile(data[0].hinhsau.ToString());
-
-                        hinhtruoc = Utility.getBitmapFromFile(data[0].hinhtruoc.ToString());
-                        hinhsau = Utility.getBitmapFromFile(data[0].hinhsau.ToString());
-
-                        data_Xe_final = data[0];
-                        return;
-                    }
-                    else
-                    {
-                        dataGridView1.Rows.Clear();
-                        foreach (var dt in data)
+                        if (data.Count == 1)
                         {
-                            this.dataGridView1.Rows.Add(
-                                 dt.Id,
-                                dt.Biensotruoc,
-                                dt.Thoigian
-                            );
+                            if (bienso.Length > 5)
+                            {
+                                UpdateUI(() => {
+                                    tbLicensePlate.Text = data[0].Biensotruoc;
+                                    tbLicensePlate1.Text = data[0].Biensosau;
+                                    txtmauxe.Text = data[0].Mauxe;
+                                    tbDriver.Text = data[0].Laixe;
+                                    txtchuxe.Text = data[0].Chuxe;
+                                    txtsgplh.Text = data[0].Sogplhx;
+                                    tb_so_nguoi.Text = data[0].Songuoitrenxe.ToString();
+                                    tb_tai_trong_dau_keo.Text = data[0].Taitrongdaukeo.ToString();
+                                    tb_tai_trong_ro_mooc.Text = data[0].Taitrongromoc.ToString();
+                                    tb_tai_trong_cho_phep.Text = data[0].Taitrongchophep.ToString();
+                                    txtdai.Text = data[0].KT_oto_dai.ToString();
+                                    txtrong.Text = data[0].KT_oto_rong.ToString();
+                                    txtcao.Text = data[0].KT_oto_cao.ToString();
+                                    txtdai1.Text = data[0].KT_rm_dai.ToString();
+                                    txtrong1.Text = data[0].KT_rm_rong.ToString();
+                                    txtcao1.Text = data[0].KT_rm_cao.ToString();
+                                    txtdai2.Text = data[0].KTthunghang_dai.ToString();
+                                    txtrong2.Text = data[0].KTthunghang_rong.ToString();
+                                    txtcao2.Text = data[0].KTthunghang_cao.ToString();
+                                    txtchieudai.Text = data[0].Chieudaicoso.ToString();
+                                    tbAxleGroupWeight1.Text = data[0].TLtruc1.ToString();
+                                    tbAxleGroupWeight2.Text = data[0].TLtruc2.ToString();
+                                    tbAxleGroupWeight3.Text = data[0].TLtruc3.ToString();
+                                    tbGrossWeight.Text = data[0].TTLtruc.ToString();
+                                    tbLicenseGrossWeight.Text = data[0].TLgiayphep.ToString();
+                                    tbAxleGroupOver1.Text = data[0].Quataitruc1.ToString() + "%";
+                                    tbAxleGroupOver2.Text = data[0].Quataitruc2.ToString() + "%";
+                                    tbAxleGroupOver3.Text = data[0].Quataitruc3.ToString() + "%";
+                                    tbGrossWeightOver.Text = data[0].Quataitong.ToString() + "%";
+                                    tbLicenseGrossWeightOver.Text = data[0].Quataitheogp.ToString() + "%";
+                                    txt_speed.Text = data[0].tocdo.ToString();
+                                    txtsgp.Text = data[0].Sogplx;
+
+                                    check = int.Parse(data[0].Kieuxe.ToString());
+                                    clickpicture(check);
+                                    //hình chưa có
+                                    pbAxle1.Image = Utility.getImageFromFile(data[0].hinhtruoclocal.ToString());
+                                    pbAxle3.Image = Utility.getImageFromFile(data[0].hinhsaulocal.ToString());
+
+                                    hinhtruoc = Utility.getBitmapFromFile(data[0].hinhtruoclocal.ToString());
+                                    hinhsau = Utility.getBitmapFromFile(data[0].hinhsaulocal.ToString());
+                                });
+                                data_Xe_final = data[0];
+                                HideSeach();
+                                return;
+                            }
+                            else
+                            {
+                                dataGridView1.Rows.Clear();
+                                foreach (var dt in data)
+                                {
+                                    UpdateUI(() => {
+                                        this.dataGridView1.Rows.Add(
+                                         dt.Id,
+                                        dt.Biensotruoc,
+                                        dt.Thoigian
+                                    );
+                                    });
+                                }
+                                HideSeach();
+                                return;
+                            }
                         }
-                        return;
+                        else
+                        {
+                            dataGridView1.Rows.Clear();
+                            foreach (var dt in data)
+                            {
+                                UpdateUI(() => {
+                                    this.dataGridView1.Rows.Add(
+                                     dt.Id,
+                                    dt.Biensotruoc,
+                                    dt.Thoigian
+                                  );
+                                });
+                            }
+                            HideSeach();
+                            return;
+                        }
                     }
                 }
-                MessageBox.Show("Không tìm thấy thông tin xe");
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Không thể tìm kiếm");
+                HideSeach();
                 return;
             }
         }
@@ -1590,7 +1653,6 @@ namespace Giatrican
         {
             if (e.RowIndex >= 0)
             {
-           
                 if (dataGridView1.Rows[e.RowIndex].Cells["ID"].Value != null)
                 {
                     string id = dataGridView1.Rows[e.RowIndex].Cells["ID"].Value.ToString();
@@ -1635,11 +1697,11 @@ namespace Giatrican
                         check = int.Parse(data.Kieuxe.ToString());
                         clickpicture(check);
                         //hình chưa có
-                        pbAxle1.Image = Utility.getImageFromFile(data.hinhtruoc.ToString());
-                        pbAxle3.Image = Utility.getImageFromFile(data.hinhsau.ToString());
+                        pbAxle1.Image = Utility.getImageFromFile(data.hinhtruoclocal.ToString());
+                        pbAxle3.Image = Utility.getImageFromFile(data.hinhsaulocal.ToString());
 
-                        hinhtruoc = Utility.getBitmapFromFile(data.hinhtruoc.ToString());
-                        hinhsau = Utility.getBitmapFromFile(data.hinhsau.ToString());
+                        hinhtruoc = Utility.getBitmapFromFile(data.hinhtruoclocal.ToString());
+                        hinhsau = Utility.getBitmapFromFile(data.hinhsaulocal.ToString());
 
                         data_Xe_final = data;
                         return;
@@ -1732,8 +1794,16 @@ namespace Giatrican
         {
             try
             {
+                if (data_Xe_final.Id != Guid.Empty) 
+                {
+                    data_Xe_final = new tbl_Data_Xe();
+                    check = 0; return;
+                } 
+                data_Xe_final.loaixe = int.Parse(txt_loaixe.Text);
                 if (File.Exists(data_Xe_final.hinhtruoc) && File.Exists(data_Xe_final.hinhtruoc))
                 {
+                    data_Xe_final.hinhtruoclocal = data_Xe_final.hinhtruoc;
+                    data_Xe_final.hinhsaulocal = data_Xe_final.hinhsau;
                     List<string> strings = new List<string>();
                     strings.Add(data_Xe_final.hinhtruoc);
                     strings.Add(data_Xe_final.hinhsau);
@@ -1747,7 +1817,7 @@ namespace Giatrican
                 try
                 {
                     data_Xe_final.Id= Guid.NewGuid();
-                    data_Xe_final.IdUser = (int?)User.Usercan.DatViet;
+                    data_Xe_final.IdUser = USERID;
                     using (var tbldataxe = new database())
                     {
                         tbldataxe.tbl_Data_Xe.Add(data_Xe_final);
@@ -1758,19 +1828,19 @@ namespace Giatrican
                 }
                 catch
                 {
-                    try
-                    {
-                        using (var tbldataxe = new databaselocal())
-                        {
-                            tbldataxe.tbl_Data_Xe.Add(data_Xe_final);
-                            tbldataxe.SaveChanges();
-                            data_Xe_final = new tbl_Data_Xe();
-                            check = 0;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
+                    //try
+                    //{
+                    //    using (var tbldataxe = new databaselocal())
+                    //    {
+                    //        tbldataxe.tbl_Data_Xe.Add(data_Xe_final);
+                    //        tbldataxe.SaveChanges();
+                    //        data_Xe_final = new tbl_Data_Xe();
+                    //        check = 0;
+                    //    }
+                    //}
+                    //catch (Exception)
+                    //{
+                    //}
                 }
             }
             catch (DbEntityValidationException)
@@ -1791,6 +1861,40 @@ namespace Giatrican
         {
             xuly(textBox1.Text);
            // syncdata();
+        }
+        private void Seach()
+        {
+            if (label45.InvokeRequired)
+            {
+                label45.Invoke(new Action(() =>
+                {
+                    label45.Text = "ĐANG XỬ LÝ...";
+                    label45.Left = (this.ClientSize.Width - label45.Width) / 2;
+                    label45.Top = (this.ClientSize.Height - label45.Height) / 2;
+                    label45.Visible = true;
+                    label45.BringToFront();
+                }));
+            }
+            else
+            {
+                label45.Text = "ĐANG XỬ LÝ...";
+                label45.Left = (this.ClientSize.Width - label45.Width) / 2;
+                label45.Top = (this.ClientSize.Height - label45.Height) / 2;
+                label45.Visible = true;
+                label45.BringToFront();
+            }
+        }
+
+        private void HideSeach()
+        {
+            if (label45.InvokeRequired)
+            {
+                label45.Invoke(new Action(() => { label45.Visible = false; }));
+            }
+            else
+            {
+                label45.Visible = false;
+            }
         }
     }
 }
